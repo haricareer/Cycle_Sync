@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "512772105414",
+    "project_id": "cyclesync2026",
+    "storage_bucket": "cyclesync2026.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:512772105414:android:e5e7d6ef923dd8193623c7",
+        "android_client_info": {
+          "package_name": "com.cyclesync"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "512772105414-l4v11sngva3dcsu90rsd84llua0s48bd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBWEqe36RtyHJOae_KG9V4u3NfNSdj2LVo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "512772105414-l4v11sngva3dcsu90rsd84llua0s48bd.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
