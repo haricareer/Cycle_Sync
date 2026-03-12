@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../core/constants/colors.dart';
 import '../../core/constants/strings.dart';
+import '../../services/firestore_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -19,11 +20,20 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   void _navigateNext() {
-    Timer(const Duration(seconds: 3), () {
+    Timer(const Duration(seconds: 3), () async {
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
-        // User is logged in, skip auth screens
-        Navigator.pushReplacementNamed(context, '/home');
+        if (user.emailVerified) {
+          final userModel = await FirestoreService().getUser(user.uid);
+          if (!mounted) return;
+          if (userModel != null && userModel.isDoctor) {
+            Navigator.pushReplacementNamed(context, '/doctor-home');
+          } else {
+            Navigator.pushReplacementNamed(context, '/home');
+          }
+        } else {
+          Navigator.pushReplacementNamed(context, '/verify-email');
+        }
       } else {
         // First time or logged out
         Navigator.pushReplacementNamed(context, '/landing');

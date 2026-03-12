@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../core/constants/colors.dart';
 import '../../services/notification_service.dart';
+import '../../services/firestore_service.dart';
+import '../../core/utils/cycle_calculator.dart';
 
 class ReminderScreen extends StatefulWidget {
   const ReminderScreen({super.key});
@@ -41,7 +44,7 @@ class _ReminderScreenState extends State<ReminderScreen> {
     }
   }
 
-  void _applyNotification(int id, Map<String, dynamic> reminder) {
+  Future<void> _applyNotification(int id, Map<String, dynamic> reminder) async {
     if (reminder["enabled"]) {
       // Handle hot-reload state where time might still be a String
       TimeOfDay timeToSchedule;
@@ -52,11 +55,65 @@ class _ReminderScreenState extends State<ReminderScreen> {
         timeToSchedule = reminder["time"] as TimeOfDay;
       }
 
+      DateTime? targetDate;
+      if (reminder["title"] == "Period Reminder" ||
+          reminder["title"] == "Ovulation Reminder") {
+        final user = FirebaseAuth.instance.currentUser;
+        if (user != null) {
+          try {
+            final cycles = await FirestoreService().getCycles(user.uid);
+            if (cycles.isNotEmpty) {
+              final avgCycleLength =
+                  CycleCalculator.calculateAverageCycleLength(cycles);
+              final latestCycle = cycles.reduce(
+                (a, b) => a.startDate.isAfter(b.startDate) ? a : b,
+              );
+
+              if (reminder["title"] == "Period Reminder") {
+                final nextPeriodDate = CycleCalculator.predictNextPeriod(
+                  latestCycle.startDate,
+                  cycleLength: avgCycleLength,
+                );
+                // Set reminder to be 1 day before predicted period
+                targetDate = nextPeriodDate.subtract(const Duration(days: 1));
+              } else {
+                final ovulationDate = CycleCalculator.predictOvulation(
+                  latestCycle.startDate,
+                  avgCycleLength,
+                );
+                // Set reminder to be 1 day before predicted ovulation
+                targetDate = ovulationDate.subtract(const Duration(days: 1));
+              }
+
+              // If the calculated date is in the past, simulate the next one by adding average cycle
+              final now = DateTime.now();
+              while (targetDate!.isBefore(
+                DateTime(now.year, now.month, now.day),
+              )) {
+                targetDate = targetDate.add(Duration(days: avgCycleLength));
+              }
+            }
+          } catch (e) {
+            // fail silently, just stick to daily alarm
+          }
+        }
+      }
+
+      String bodyText;
+      if (reminder["title"] == "Period Reminder") {
+        bodyText = "Your period is predicted to start tomorrow!";
+      } else if (reminder["title"] == "Ovulation Reminder") {
+        bodyText = "You are predicted to ovulate tomorrow!";
+      } else {
+        bodyText = "It's time for your ${reminder["title"].toLowerCase()}!";
+      }
+
       NotificationService().scheduleNotification(
         id: id,
         title: reminder["title"],
-        body: "It's time for your ${reminder["title"].toLowerCase()}!",
+        body: bodyText,
         time: timeToSchedule,
+        targetDate: targetDate,
       );
     } else {
       NotificationService().cancelNotification(id);

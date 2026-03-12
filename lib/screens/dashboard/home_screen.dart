@@ -9,7 +9,6 @@ import '../../models/user_model.dart';
 
 import '../cycle/cycle_calendar_screen.dart';
 import '../doctor_sync/doctor_list_screen.dart';
-import '../fertility/fertility_window_screen.dart';
 import '../fertility/ovulation_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -26,7 +25,6 @@ class _HomeScreenState extends State<HomeScreen> {
     const _DashboardTab(),
     const CycleCalendarScreen(),
     const DoctorListScreen(),
-    const FertilityWindowScreen(),
     const OvulationScreen(),
   ];
 
@@ -49,10 +47,6 @@ class _HomeScreenState extends State<HomeScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.medical_services),
             label: "Doctor",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.favorite),
-            label: "Fertility",
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.brightness_5),
@@ -150,16 +144,13 @@ class _DashboardTab extends StatelessWidget {
                 );
               }
             } else if (value == 'profile') {
-              // Add a snackbar for now until a real profile screen exists
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Profile Settings coming soon!")),
-              );
+              Navigator.pushNamed(context, '/profile');
             }
           },
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: CircleAvatar(
-              backgroundColor: AppColors.primary.withValues(alpha: 0.15),
+              backgroundColor: AppColors.white,
               foregroundColor: AppColors.primary,
               radius: 18,
               child: Text(
@@ -320,13 +311,6 @@ class _DashboardTab extends StatelessWidget {
         label: "Ovulation",
         onTap: () {
           Navigator.pushNamed(context, '/ovulation');
-        },
-      ),
-      _actionTile(
-        icon: Icons.favorite,
-        label: "Fertility",
-        onTap: () {
-          Navigator.pushNamed(context, '/fertility');
         },
       ),
     ];

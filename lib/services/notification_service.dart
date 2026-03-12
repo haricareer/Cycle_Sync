@@ -54,20 +54,25 @@ class NotificationService {
     required String title,
     required String body,
     required TimeOfDay time,
+    DateTime? targetDate,
   }) async {
     final now = tz.TZDateTime.now(tz.local);
     var scheduledDate = tz.TZDateTime(
       tz.local,
-      now.year,
-      now.month,
-      now.day,
+      targetDate?.year ?? now.year,
+      targetDate?.month ?? now.month,
+      targetDate?.day ?? now.day,
       time.hour,
       time.minute,
     );
 
-    // If time passed, schedule for next day
-    if (scheduledDate.isBefore(now)) {
+    // If time passed (and no specific target date is provided), schedule for next day
+    if (targetDate == null && scheduledDate.isBefore(now)) {
       scheduledDate = scheduledDate.add(const Duration(days: 1));
+    } else if (scheduledDate.isBefore(now)) {
+      // If we provided a targetDate but the exact time has already passed
+      // we don't schedule an alarm in the past
+      return;
     }
 
     const AndroidNotificationDetails androidPlatformChannelSpecifics =
@@ -92,7 +97,9 @@ class NotificationService {
       scheduledDate: scheduledDate,
       notificationDetails: platformChannelSpecifics,
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      matchDateTimeComponents: DateTimeComponents.time,
+      matchDateTimeComponents: targetDate == null
+          ? DateTimeComponents.time
+          : null,
     );
   }
 

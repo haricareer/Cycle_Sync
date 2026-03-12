@@ -58,10 +58,10 @@ class EmergencyGuidanceScreen extends StatelessWidget {
               icon: Icons.phone_in_talk,
               label: "Emergency Call",
               onTap: () async {
-                final Uri url = Uri(scheme: 'tel', path: '911');
-                if (await canLaunchUrl(url)) {
+                final Uri url = Uri(scheme: 'tel', path: '112');
+                try {
                   await launchUrl(url);
-                } else {
+                } catch (e) {
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Could not open dialer.')),

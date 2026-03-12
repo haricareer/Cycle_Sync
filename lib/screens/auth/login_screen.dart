@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/constants/colors.dart';
 import '../../../core/constants/strings.dart';
 import '../../../services/auth_service.dart';
+import '../../../services/firestore_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -152,11 +153,31 @@ class _LoginScreenState extends State<LoginScreen> {
                     );
 
                     if (user != null && mounted) {
-                      Navigator.pushNamedAndRemoveUntil(
-                        context,
-                        '/home',
-                        (route) => false,
-                      );
+                      if (user.emailVerified) {
+                        final userModel = await FirestoreService().getUser(
+                          user.uid,
+                        );
+                        if (!mounted) return;
+                        if (userModel != null && userModel.isDoctor) {
+                          Navigator.pushNamedAndRemoveUntil(
+                            context,
+                            '/doctor-home',
+                            (route) => false,
+                          );
+                        } else {
+                          Navigator.pushNamedAndRemoveUntil(
+                            context,
+                            '/home',
+                            (route) => false,
+                          );
+                        }
+                      } else {
+                        Navigator.pushNamedAndRemoveUntil(
+                          context,
+                          '/verify-email',
+                          (route) => false,
+                        );
+                      }
                     }
                   } on AuthException catch (e) {
                     if (mounted) {
